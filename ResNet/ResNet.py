@@ -17,7 +17,7 @@ class BasicBlock(nn.Module):
         self.conv2 = conv3x3(in_planes, planes, stride)
         self.bn2 = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU(inplace=True)
-        self.conv3 = conv3x3(planes, planes*4)
+        self.conv3 = conv3x3(planes, planes*4, stride)
         self.bn3 = nn.BatchNorm2d(planes*4)
         self.downsample = downsample
         self.stride = stride
@@ -42,7 +42,7 @@ class BasicBlock(nn.Module):
 
             return out
 
-class ResNet(nn.Moudle):
+class ResNet(nn.Module):
     def __init__(self, block, layers, num_classes = 10):
         self.inplanes = 64
         super(ResNet,self).__init__()
@@ -58,37 +58,40 @@ class ResNet(nn.Moudle):
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
 
-        def _make_layer(self, block, planes, blocks, stride = 1):
-            downsample = None
-            if stride != 1 or self.inplanes != planes * block.expansion:
-                downsample = nn.Sequential(
-                    nn.Conv2d(self.inplanes, planes * block.expansion, kernel_size=1,stride=stride, bias=False),
-                    nn.BatchNorm2d(planes * block.expansion)
-                )
+    def _make_layer(self, block, planes, blocks, stride = 1):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = nn.Sequential(
+                nn.Conv2d(self.inplanes, planes * block.expansion, kernel_size=1,stride=stride, bias=False),
+                nn.BatchNorm2d(planes * block.expansion)
+            )
 
-            layers = []
-            layers.append(block(self.inplanes,planes, stride, downsample))
-            self.inplanes = planes * block.expansion
-            for i in range(1, blocks):
-                layers.append(block(self.inplanes, planes))
+        layers = []
+        layers.append(block(self.inplanes,planes, stride, downsample))
+        self.inplanes = planes * block.expansion
+        for i in range(1, blocks):
+            layers.append(block(self.inplanes, planes))
 
-            return nn.Sequential(*layers)
+        return nn.Sequential(*layers)
 
-        def forward(self, x):
-            x = self.conv1(x)
-            x = self.bn1(x)
-            x = self.maxpool(self.relu(x))
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.maxpool(self.relu(x))
 
-            x = self.layer1(x)
-            x = self.layer2(x)
-            x = self.layer3(x)
-            x = self.layer4(x)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
 
-            x = self.fc(self.avgpool(x))
+        x = self.fc(self.avgpool(x))
 
-            return x
+        return x
 
 
 def resnet50():
     model = ResNet(BasicBlock, [3, 4, 6, 3])
-    return model
+    print(model)
+
+if __name__ == '__main__':
+    resnet50()
