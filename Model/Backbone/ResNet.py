@@ -92,7 +92,13 @@ class ResNet(nn.Module):
 
 def resnet50():
     model = ResNet(Bottleneck,[3,4,6,3])
-    print(model)
+    features = [model.conv1, model.bn1, model.relu, model.maxpool, model.layer1, model.layer2, model.layer3]
+    features = nn.Sequential(*features)
+
+    classifier = list([model.layer4, model.avgpool])
+    classifier = nn.Sequential(*classifier)
+    print(len(features))
+    return features
 
 if __name__ == '__main__':
     resnet50()
